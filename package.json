@@ -1,0 +1,52 @@
+{
+  "name": "nextos",
+  "version": "1.0.0",
+  "description": "Custom Arch Linux ISO Creator",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "webpack --config webpack.config.js",
+    "watch": "webpack --config webpack.config.js --watch",
+    "package": "electron-builder build --win --publish never"
+  },
+  "keywords": [
+    "arch",
+    "linux",
+    "iso",
+    "creator"
+  ],
+  "author": "Ananya Pratap Singh",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.22.5",
+    "@babel/preset-env": "^7.22.5",
+    "@babel/preset-react": "^7.22.5",
+    "babel-loader": "^9.1.2",
+    "css-loader": "^6.8.1",
+    "electron": "^25.2.0",
+    "electron-builder": "^24.4.0",
+    "style-loader": "^3.3.3",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.13.5",
+    "process": "^0.11.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.13.0"
+  },
+  "build": {
+    "appId": "com.nextos.iso-creator",
+    "productName": "NextOS",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
