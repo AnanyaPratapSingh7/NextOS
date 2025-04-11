@@ -162,6 +162,35 @@ function SystemTweaks() {
 
           <Box sx={{ mb: 3 }}>
             <Typography variant="h6" gutterBottom>
+              Filesystem
+            </Typography>
+            <RadioGroup
+              value={tweaks.filesystem}
+              onChange={handleChange}
+              name="filesystem"
+            >
+              <FormControlLabel
+                value="ext4"
+                control={<Radio />}
+                label="ext4 (Traditional, stable)"
+              />
+              <FormControlLabel
+                value="ext3"
+                control={<Radio />}
+                label="ext3 (Older, compatible)"
+              />
+              <FormControlLabel
+                value="btrfs"
+                control={<Radio />}
+                label="btrfs (Modern, with snapshots)"
+              />
+            </RadioGroup>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
               Dotfiles
             </Typography>
             <FormGroup>

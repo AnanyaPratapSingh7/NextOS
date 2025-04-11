@@ -68,9 +68,28 @@ function ISOGeneration() {
 
       window.api.receive('iso-error', (errorMessage) => {
         setGenerating(false);
-        setError('Error: ' + errorMessage);
+        if (errorMessage.includes('Docker is not installed')) {
+          setError(
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                Docker is not installed or not running. Please install Docker Desktop for Windows:
+              </Typography>
+              <ol>
+                <li>Download Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener noreferrer">Docker's official website</a></li>
+                <li>Install Docker Desktop</li>
+                <li>Start Docker Desktop</li>
+                <li>Restart this application</li>
+              </ol>
+            </Box>
+          );
+        } else {
+          setError('Error: ' + errorMessage);
+        }
       });
     }
+
+    // Automatically start the ISO generation process when the component is loaded
+    handleGenerateISO();
 
     return () => {
       // Clean up listeners if component unmounts

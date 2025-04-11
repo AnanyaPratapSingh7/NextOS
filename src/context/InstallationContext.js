@@ -22,6 +22,7 @@ const initialState = {
     swap: true,
     swapSize: '4',
     partitioning: 'auto',
+    filesystem: 'ext4',
     dotfiles: false,
     dotfilesUrl: '',
   },

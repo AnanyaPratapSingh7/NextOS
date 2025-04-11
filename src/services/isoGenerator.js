@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { BrowserWindow } = require('electron');
 const https = require('https');
+const os = require('os');
 
 class ISOGenerator {
   constructor(config) {
@@ -125,15 +126,41 @@ class ISOGenerator {
 
   async setupDockerContainer() {
     this.logToTerminal('Setting up Docker container...\n');
-    const command = `docker run -d --name ${this.containerName} -v "${this.archIsoPath}:/arch.iso:ro" archlinux/base`;
+    
+    // First, make sure any existing container is removed
+    try {
+      await this.executeCommand(`docker rm -f ${this.containerName}`);
+    } catch (error) {
+      // Ignore errors if container doesn't exist
+    }
+    
+    // Create a new container with necessary permissions and mounts
+    const command = `docker run -d --name ${this.containerName} \
+      --privileged \
+      -v "${this.archIsoPath}:/arch.iso:ro" \
+      -v "${path.join(__dirname, '../../temp-archinstall-config.json')}:/archinstall-config.json:ro" \
+      archlinux:base-devel \
+      tail -f /dev/null`; // Keep container running
+    
     await this.executeCommand(command);
-    this.logToTerminal('✓ Docker container created\n');
+    
+    // Verify container is running
+    const containerStatus = await this.executeCommand(`docker ps --filter name=${this.containerName} --format "{{.Status}}"`);
+    if (!containerStatus.includes("Up")) {
+      throw new Error("Failed to start Docker container");
+    }
+    
+    this.logToTerminal('✓ Docker container created and running\n');
   }
 
   async runArchinstall() {
     this.logToTerminal('Configuring system with archinstall...\n');
-    const config = this.generateArchinstallConfig();
-    const command = `docker exec ${this.containerName} archinstall --config ${config}`;
+    
+    // Install archinstall if not already installed
+    await this.executeCommand(`docker exec ${this.containerName} pacman -Sy --noconfirm archinstall`);
+    
+    // Run archinstall with the config file
+    const command = `docker exec ${this.containerName} archinstall --config /archinstall-config.json`;
     await this.executeCommand(command);
     this.logToTerminal('✓ System configuration completed\n');
   }
@@ -160,23 +187,33 @@ class ISOGenerator {
     this.logToTerminal('✓ Cleanup completed\n');
   }
 
-  executeCommand(command) {
+  async executeCommand(command) {
     return new Promise((resolve, reject) => {
+      console.log(`Executing command: ${command}`);
       const process = spawn(command, [], { shell: true });
       
+      let stdout = '';
+      let stderr = '';
+
       process.stdout.on('data', (data) => {
-        this.logToTerminal(data.toString());
+        const output = data.toString();
+        stdout += output;
+        console.log(`Command output: ${output}`);
+        this.logToTerminal(output);
       });
 
       process.stderr.on('data', (data) => {
-        this.logToTerminal(data.toString());
+        const error = data.toString();
+        stderr += error;
+        console.error(`Command error: ${error}`);
+        this.logToTerminal(error);
       });
 
       process.on('close', (code) => {
         if (code === 0) {
-          resolve();
+          resolve(stdout.trim());
         } else {
-          reject(new Error(`Command failed with exit code ${code}`));
+          reject(new Error(`Command failed with exit code ${code}\nCommand: ${command}\nError: ${stderr}`));
         }
       });
     });
@@ -195,6 +232,7 @@ class ISOGenerator {
       network_manager: this.config.systemConfig.networkManager,
       timezone: this.config.systemConfig.timezone,
       root_password: this.config.systemConfig.rootPassword,
+      filesystem: this.config.systemTweaks.filesystem,
       user_account: {
         username: this.config.systemConfig.userAccount.username,
         password: this.config.systemConfig.userAccount.password,
@@ -215,9 +253,21 @@ class ISOGenerator {
   generatePostInstallScript() {
     // Generate post-installation script based on selected packages
     const packages = this.getSelectedPackages();
+    const filesystem = this.config.systemTweaks.filesystem;
+    
+    // Add filesystem-specific packages
+    let fsPackages = '';
+    if (filesystem === 'btrfs') {
+      fsPackages = 'btrfs-progs';
+    } else if (filesystem === 'ext4') {
+      fsPackages = 'e2fsprogs';
+    } else if (filesystem === 'ext3') {
+      fsPackages = 'e2fsprogs';
+    }
+    
     return `
       pacman -Syu --noconfirm
-      pacman -S --noconfirm ${packages.join(' ')}
+      pacman -S --noconfirm ${packages.join(' ')} ${fsPackages}
       systemctl enable NetworkManager
       systemctl enable ${this.config.systemConfig.audio}
     `;

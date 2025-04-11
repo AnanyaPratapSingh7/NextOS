@@ -1,0 +1,35 @@
+{
+  "hostname": "nextos",
+  "locale": "en_US.UTF-8",
+  "keyboard_layout": "us",
+  "mirror_region": "Worldwide",
+  "bootloader": "grub",
+  "audio": "pipewire",
+  "kernel": "linux",
+  "network_manager": "networkmanager",
+  "timezone": "UTC",
+  "root_password": "12345678",
+  "filesystem": "btrfs",
+  "user_account": {
+    "username": "ananya",
+    "password": "123456789",
+    "groups": [
+      "wheel",
+      "audio",
+      "video",
+      "storage",
+      "optical",
+      "network",
+      "lp",
+      "scanner"
+    ]
+  },
+  "desktop_environment": "gnome",
+  "packages": [
+    "firefox",
+    "vlc",
+    "yay",
+    "nautilus",
+    "vim"
+  ]
+}
