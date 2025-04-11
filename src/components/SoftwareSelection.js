@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const steps = ['Base System', 'Desktop Environment', 'Software Selection', 'System Tweaks', 'ISO Generation'];
+const steps = ['Base System', 'Desktop Environment', 'Software Selection', 'System Configuration', 'System Tweaks', 'ISO Generation'];
 
 const softwareCategories = [
   {
@@ -94,12 +94,11 @@ function SoftwareSelection() {
   };
 
   const handleNext = () => {
-    // Save software selection to state management
     dispatch({
       type: 'UPDATE_SOFTWARE_SELECTION',
       payload: selectedPackages
     });
-    navigate('/tweaks');
+    navigate('/system-config');
   };
 
   return (

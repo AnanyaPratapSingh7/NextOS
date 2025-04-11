@@ -59,7 +59,7 @@ function DesktopEnvironment() {
         selectedWM
       }
     });
-    navigate('/software');
+    navigate('/software-selection');
   };
 
   return (

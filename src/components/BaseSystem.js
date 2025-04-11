@@ -37,7 +37,7 @@ function BaseSystem() {
       type: 'UPDATE_BASE_SYSTEM',
       payload: baseSystem
     });
-    navigate('/desktop');
+    navigate('/desktop-environment');
   };
 
   return (

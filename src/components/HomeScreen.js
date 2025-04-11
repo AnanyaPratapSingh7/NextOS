@@ -13,7 +13,7 @@ function HomeScreen() {
   const navigate = useNavigate();
 
   const handleStart = () => {
-    navigate('/base');
+    navigate('/base-system');
   };
 
   return (
@@ -24,7 +24,7 @@ function HomeScreen() {
             NextOS
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            Create your custom Arch Linux distribution with ease
+            Build your own Arch Distro
           </Typography>
           <Box sx={{ mt: 4 }}>
             <Button

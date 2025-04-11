@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const isDev = process.env.NODE_ENV === 'development';
+const ISOGenerator = require('./src/services/isoGenerator');
 
 let mainWindow;
 
@@ -31,12 +32,20 @@ function createWindow() {
   });
 
   // Load the index.html file
-  mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+  const indexPath = path.join(__dirname, 'dist', 'index.html');
+  console.log('Loading index.html from:', indexPath);
+  
+  mainWindow.loadFile(indexPath).catch(error => {
+    console.error('Error loading index.html:', error);
+  });
 
-  // Only open DevTools in development mode
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  // Open DevTools by default
+  mainWindow.webContents.openDevTools();
+
+  // Log any errors that occur during page load
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error('Failed to load:', errorCode, errorDescription);
+  });
 }
 
 app.whenReady().then(() => {
@@ -45,6 +54,8 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+}).catch(error => {
+  console.error('Error during app initialization:', error);
 });
 
 app.on('window-all-closed', () => {
@@ -54,22 +65,34 @@ app.on('window-all-closed', () => {
 });
 
 // IPC event handlers
-ipcMain.on('generate-iso', (event, config) => {
-  // This would be replaced with actual ISO generation logic
-  let progress = 0;
-  const progressInterval = setInterval(() => {
-    progress += 10;
+ipcMain.on('generate-iso', async (event, config) => {
+  try {
+    const generator = new ISOGenerator(config);
+    let progress = 0;
+    
+    // Send initial progress
     mainWindow.webContents.send('iso-progress', progress);
     
-    if (progress >= 100) {
-      clearInterval(progressInterval);
+    // Start ISO generation
+    const result = await generator.generateISO();
+    
+    if (result.success) {
       mainWindow.webContents.send('iso-complete', {
         success: true,
-        isoPath: path.join(app.getPath('downloads'), 'nextos.iso'),
+        isoPath: result.isoPath,
         isoName: 'nextos.iso'
       });
+    } else {
+      mainWindow.webContents.send('iso-error', {
+        message: result.message
+      });
     }
-  }, 500);
+  } catch (error) {
+    console.error('Error generating ISO:', error);
+    mainWindow.webContents.send('iso-error', {
+      message: error.message
+    });
+  }
 });
 
 ipcMain.on('save-iso', async (event, { isoPath, isoName }) => {
@@ -82,12 +105,20 @@ ipcMain.on('save-iso', async (event, { isoPath, isoName }) => {
   });
   
   if (!canceled && filePath) {
-    // This would be replaced with actual file copy logic
-    mainWindow.webContents.send('iso-saved', {
-      success: true,
-      message: 'ISO saved successfully',
-      filePath: filePath
-    });
+    try {
+      // Copy the ISO file to the selected location
+      fs.copyFileSync(isoPath, filePath);
+      mainWindow.webContents.send('iso-saved', {
+        success: true,
+        message: 'ISO saved successfully',
+        filePath: filePath
+      });
+    } catch (error) {
+      console.error('Error saving ISO:', error);
+      mainWindow.webContents.send('iso-error', {
+        message: 'Error saving ISO: ' + error.message
+      });
+    }
   } else {
     mainWindow.webContents.send('iso-cancelled', {
       message: 'ISO save cancelled'

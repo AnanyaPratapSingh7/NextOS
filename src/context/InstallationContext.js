@@ -25,6 +25,23 @@ const initialState = {
     dotfiles: false,
     dotfilesUrl: '',
   },
+  systemConfig: {
+    keyboardLayout: 'us',
+    mirrorRegion: 'Worldwide',
+    bootloader: 'grub',
+    audio: 'pipewire',
+    kernel: 'linux',
+    networkManager: 'networkmanager',
+    timezone: 'UTC',
+    locale: 'en_US.UTF-8',
+    hostname: 'nextos',
+    rootPassword: '',
+    userAccount: {
+      username: '',
+      password: '',
+      groups: ['wheel', 'audio', 'video', 'storage', 'optical', 'network', 'lp', 'scanner']
+    }
+  }
 };
 
 function installationReducer(state, action) {
@@ -48,6 +65,11 @@ function installationReducer(state, action) {
       return {
         ...state,
         systemTweaks: action.payload
+      };
+    case 'UPDATE_SYSTEM_CONFIG':
+      return {
+        ...state,
+        systemConfig: action.payload
       };
     case 'RESET':
       return initialState;

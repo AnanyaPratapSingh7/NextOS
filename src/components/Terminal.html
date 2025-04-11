@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NextOS ISO Generation Progress</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        #terminal {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            color: #00ff00;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .progress {
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <script>
+        const { ipcRenderer } = require('electron');
+        const terminal = document.getElementById('terminal');
+
+        ipcRenderer.on('terminal-output', (event, message) => {
+            // Handle carriage return for progress updates
+            if (message.includes('\r')) {
+                const lines = terminal.innerHTML.split('\n');
+                lines[lines.length - 1] = message;
+                terminal.innerHTML = lines.join('\n');
+            } else {
+                terminal.innerHTML += message;
+            }
+            
+            // Auto-scroll to bottom
+            terminal.scrollTop = terminal.scrollHeight;
+        });
+    </script>
+</body>
+</html> 

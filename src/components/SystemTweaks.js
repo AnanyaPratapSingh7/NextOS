@@ -40,7 +40,7 @@ function SystemTweaks() {
       type: 'UPDATE_SYSTEM_TWEAKS',
       payload: tweaks
     });
-    navigate('/generate');
+    navigate('/iso-generation');
   };
 
   return (

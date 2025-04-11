@@ -12,7 +12,13 @@ contextBridge.exposeInMainWorld('api', {
     }
   },
   receive: (channel, func) => {
-    let validChannels = ['iso-progress', 'iso-complete', 'iso-error', 'iso-saved', 'iso-cancelled'];
+    let validChannels = [
+      'iso-progress',
+      'iso-complete',
+      'iso-error',
+      'iso-saved',
+      'iso-cancelled'
+    ];
     if (validChannels.includes(channel)) {
       // Remove the event listener to avoid memory leaks
       ipcRenderer.removeAllListeners(channel);
